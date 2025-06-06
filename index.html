@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>나의 대동여지도 - LocalStorage 버전</title>
+  <title>나의 대동여지도 - LocalStorage + 랜덤 색상</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     body, html { margin: 0; padding: 0; height: 100%; background: #000; }
@@ -43,13 +43,11 @@
     let currentLatLng = null;
     let itemMarkers = [];
 
-    // 지도 초기화
     map = L.map('map').setView([37.5665, 126.9780], 15);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; OpenStreetMap, CartoDB'
     }).addTo(map);
 
-    // 현재 위치 실시간 표시
     navigator.geolocation.watchPosition(position => {
       const lat = position.coords.latitude;
       const lng = position.coords.longitude;
@@ -74,22 +72,30 @@
       maximumAge: 0
     });
 
-    // LocalStorage에서 마커 불러오기
     window.addEventListener('load', () => {
       const savedMarkers = JSON.parse(localStorage.getItem('myMarkers'));
       if (savedMarkers) {
         savedMarkers.forEach(data => {
-          addMarkerToMap(data.lat, data.lng, data.name);
+          addMarkerToMap(data.lat, data.lng, data.name, data.color);
         });
       }
     });
 
-    // 마킹 추가
+    function getRandomColor() {
+      const letters = '0123456789ABCDEF';
+      let color = '#';
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+
     function markItem() {
       if (currentLatLng) {
         const itemName = prompt("마킹할 아이템의 이름을 입력하세요:", "물건");
         if (itemName !== null && itemName.trim() !== "") {
-          addMarkerToMap(currentLatLng[0], currentLatLng[1], itemName);
+          const color = getRandomColor();
+          addMarkerToMap(currentLatLng[0], currentLatLng[1], itemName, color);
           saveMarkers();
         }
       } else {
@@ -97,15 +103,19 @@
       }
     }
 
-    // 마커 생성 함수
-    function addMarkerToMap(lat, lng, name) {
-      const marker = L.marker([lat, lng])
-        .addTo(map)
-        .bindPopup(`📦 ${name}<br>위도: ${lat.toFixed(5)}, 경도: ${lng.toFixed(5)}`);
+    function addMarkerToMap(lat, lng, name, color) {
+      const marker = L.circleMarker([lat, lng], {
+        radius: 8,
+        color: color,
+        fillColor: color,
+        fillOpacity: 1
+      })
+      .addTo(map)
+      .bindPopup(`📦 ${name}<br>위도: ${lat.toFixed(5)}, 경도: ${lng.toFixed(5)}<br>색상: ${color}`);
       marker.openPopup();
-      itemMarkers.push({ marker, lat, lng, name });
 
-      // 마커 클릭 시 삭제 여부 묻기
+      itemMarkers.push({ marker, lat, lng, name, color });
+
       marker.on('click', () => {
         const confirmDelete = confirm(`'${name}' 마커를 삭제하시겠습니까?`);
         if (confirmDelete) {
@@ -116,12 +126,12 @@
       });
     }
 
-    // LocalStorage에 마커 저장
     function saveMarkers() {
       const markersData = itemMarkers.map(m => ({
         lat: m.lat,
         lng: m.lng,
-        name: m.name
+        name: m.name,
+        color: m.color
       }));
       localStorage.setItem('myMarkers', JSON.stringify(markersData));
     }

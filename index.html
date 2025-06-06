@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>나의 대동여지도 - 마킹 추가/삭제 + 이름 입력</title>
+  <title>나의 대동여지도 - LocalStorage 버전</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     body, html { margin: 0; padding: 0; height: 100%; background: #000; }
@@ -34,7 +34,6 @@
   <div id="map"></div>
   <div id="buttonContainer">
     <button onclick="markItem()">현재 위치에 마킹 추가</button>
-    <button onclick="clearMarkers()">마킹 삭제</button>
   </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -75,35 +74,56 @@
       maximumAge: 0
     });
 
-    // 현재 위치에 마킹 추가 (이름 입력)
+    // LocalStorage에서 마커 불러오기
+    window.addEventListener('load', () => {
+      const savedMarkers = JSON.parse(localStorage.getItem('myMarkers'));
+      if (savedMarkers) {
+        savedMarkers.forEach(data => {
+          addMarkerToMap(data.lat, data.lng, data.name);
+        });
+      }
+    });
+
+    // 마킹 추가
     function markItem() {
       if (currentLatLng) {
-        const itemName = prompt("마킹할 아이템의 이름을 입력하세요:", "");
+        const itemName = prompt("마킹할 아이템의 이름을 입력하세요:", "물건");
         if (itemName !== null && itemName.trim() !== "") {
-          const marker = L.marker(currentLatLng)
-            .addTo(map)
-            .bindPopup(`📦 ${itemName}<br>위도: ${currentLatLng[0].toFixed(5)}, 경도: ${currentLatLng[1].toFixed(5)}`);
-          marker.openPopup();
-          itemMarkers.push(marker);
-
-          // 마커 클릭 시 삭제 여부 묻기
-          marker.on('click', () => {
-            const confirmDelete = confirm(`'${itemName}' 마커를 삭제하시겠습니까?`);
-            if (confirmDelete) {
-              map.removeLayer(marker);
-              itemMarkers = itemMarkers.filter(m => m !== marker);
-            }
-          });
+          addMarkerToMap(currentLatLng[0], currentLatLng[1], itemName);
+          saveMarkers();
         }
       } else {
         alert("현재 위치 정보를 가져올 수 없습니다.");
       }
     }
 
-    // 모든 마킹 삭제
-    function clearMarkers() {
-      itemMarkers.forEach(marker => map.removeLayer(marker));
-      itemMarkers = [];
+    // 마커 생성 함수
+    function addMarkerToMap(lat, lng, name) {
+      const marker = L.marker([lat, lng])
+        .addTo(map)
+        .bindPopup(`📦 ${name}<br>위도: ${lat.toFixed(5)}, 경도: ${lng.toFixed(5)}`);
+      marker.openPopup();
+      itemMarkers.push({ marker, lat, lng, name });
+
+      // 마커 클릭 시 삭제 여부 묻기
+      marker.on('click', () => {
+        const confirmDelete = confirm(`'${name}' 마커를 삭제하시겠습니까?`);
+        if (confirmDelete) {
+          map.removeLayer(marker);
+          itemMarkers = itemMarkers.filter(m => m.marker !== marker);
+          saveMarkers();
+        }
+      });
+    }
+
+    // LocalStorage에 마커 저장
+    function saveMarkers() {
+      const markersData = itemMarkers.map(m => ({
+        lat: m.lat,
+        lng: m.lng,
+        name: m.name
+      }));
+      localStorage.setItem('myMarkers', JSON.stringify(markersData));
     }
   </script>
 </body>

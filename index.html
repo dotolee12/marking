@@ -75,23 +75,32 @@
       maximumAge: 0
     });
 
-    // 버튼 클릭 시 현재 위치에 마킹 추가 (이름 입력)
+    // 현재 위치에 마킹 추가 (이름 입력)
     function markItem() {
       if (currentLatLng) {
-        const itemName = prompt("마킹할 아이템의 이름을 입력하세요:", "물건");
+        const itemName = prompt("마킹할 아이템의 이름을 입력하세요:", "");
         if (itemName !== null && itemName.trim() !== "") {
           const marker = L.marker(currentLatLng)
             .addTo(map)
             .bindPopup(`📦 ${itemName}<br>위도: ${currentLatLng[0].toFixed(5)}, 경도: ${currentLatLng[1].toFixed(5)}`);
           marker.openPopup();
           itemMarkers.push(marker);
+
+          // 마커 클릭 시 삭제 여부 묻기
+          marker.on('click', () => {
+            const confirmDelete = confirm(`'${itemName}' 마커를 삭제하시겠습니까?`);
+            if (confirmDelete) {
+              map.removeLayer(marker);
+              itemMarkers = itemMarkers.filter(m => m !== marker);
+            }
+          });
         }
       } else {
         alert("현재 위치 정보를 가져올 수 없습니다.");
       }
     }
 
-    // 마킹 삭제
+    // 모든 마킹 삭제
     function clearMarkers() {
       itemMarkers.forEach(marker => map.removeLayer(marker));
       itemMarkers = [];

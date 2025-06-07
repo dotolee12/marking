@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>나의 대동여지도 - LocalStorage + 랜덤 색상</title>
+  <title>나의 대동여지도 - 내 위치로 이동 버튼</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     body, html { margin: 0; padding: 0; height: 100%; background: #000; }
     #map { height: 100%; }
     #buttonContainer {
       position: absolute;
-      top: 90%;
+      top: 10px;
       left: 10px;
       z-index: 1000;
       display: flex;
@@ -34,6 +34,8 @@
   <div id="map"></div>
   <div id="buttonContainer">
     <button onclick="markItem()">현재 위치에 마킹 추가</button>
+    <button onclick="clearMarkers()">마킹 삭제</button>
+    <button onclick="moveToCurrentLocation()">내 위치로 이동</button>
   </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -43,11 +45,13 @@
     let currentLatLng = null;
     let itemMarkers = [];
 
+    // 지도 초기화
     map = L.map('map').setView([37.5665, 126.9780], 15);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; OpenStreetMap, CartoDB'
     }).addTo(map);
 
+    // 현재 위치 실시간 표시
     navigator.geolocation.watchPosition(position => {
       const lat = position.coords.latitude;
       const lng = position.coords.longitude;
@@ -64,7 +68,9 @@
         fillOpacity: 1
       }).addTo(map);
 
-      map.setView(currentLatLng, 15);
+      // 자동 중심 이동 주석 처리 (버튼으로 대체)
+      // map.setView(currentLatLng, 15);
+
     }, error => {
       alert('위치 정보를 불러올 수 없습니다.');
     }, {
@@ -72,68 +78,35 @@
       maximumAge: 0
     });
 
-    window.addEventListener('load', () => {
-      const savedMarkers = JSON.parse(localStorage.getItem('myMarkers'));
-      if (savedMarkers) {
-        savedMarkers.forEach(data => {
-          addMarkerToMap(data.lat, data.lng, data.name, data.color);
-        });
-      }
-    });
-
-    function getRandomColor() {
-      const letters = '0123456789ABCDEF';
-      let color = '#';
-      for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-      }
-      return color;
-    }
-
+    // 현재 위치에 마킹 추가
     function markItem() {
       if (currentLatLng) {
         const itemName = prompt("마킹할 아이템의 이름을 입력하세요:", "물건");
         if (itemName !== null && itemName.trim() !== "") {
-          const color = getRandomColor();
-          addMarkerToMap(currentLatLng[0], currentLatLng[1], itemName, color);
-          saveMarkers();
+          const marker = L.marker(currentLatLng)
+            .addTo(map)
+            .bindPopup(`📦 ${itemName}<br>위도: ${currentLatLng[0].toFixed(5)}, 경도: ${currentLatLng[1].toFixed(5)}`);
+          marker.openPopup();
+          itemMarkers.push(marker);
         }
       } else {
         alert("현재 위치 정보를 가져올 수 없습니다.");
       }
     }
 
-    function addMarkerToMap(lat, lng, name, color) {
-      const marker = L.circleMarker([lat, lng], {
-        radius: 8,
-        color: color,
-        fillColor: color,
-        fillOpacity: 1
-      })
-      .addTo(map)
-      .bindPopup(`📦 ${name}<br>위도: ${lat.toFixed(5)}, 경도: ${lng.toFixed(5)}<br>색상: ${color}`);
-      marker.openPopup();
-
-      itemMarkers.push({ marker, lat, lng, name, color });
-
-      marker.on('click', () => {
-        const confirmDelete = confirm(`'${name}' 마커를 삭제하시겠습니까?`);
-        if (confirmDelete) {
-          map.removeLayer(marker);
-          itemMarkers = itemMarkers.filter(m => m.marker !== marker);
-          saveMarkers();
-        }
-      });
+    // 마킹 삭제
+    function clearMarkers() {
+      itemMarkers.forEach(marker => map.removeLayer(marker));
+      itemMarkers = [];
     }
 
-    function saveMarkers() {
-      const markersData = itemMarkers.map(m => ({
-        lat: m.lat,
-        lng: m.lng,
-        name: m.name,
-        color: m.color
-      }));
-      localStorage.setItem('myMarkers', JSON.stringify(markersData));
+    // 내 위치로 이동 버튼
+    function moveToCurrentLocation() {
+      if (currentLatLng) {
+        map.setView(currentLatLng, 15);
+      } else {
+        alert("현재 위치 정보를 가져올 수 없습니다.");
+      }
     }
   </script>
 </body>

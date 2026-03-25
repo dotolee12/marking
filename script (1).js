@@ -251,7 +251,7 @@ function getAgeColor(ageDays) {
     return "rgba(130, 92, 55, 0.40)";
 }
 
-// 연두(10분) → 노랑(30분) → 주황(60분)
+// ?곕몢(10遺? ???몃옉(30遺? ??二쇳솴(60遺?
 function getStayColor(stayMin) {
     if (stayMin >= 10 && stayMin < 30) {
         return {
@@ -287,7 +287,7 @@ function getMetersToPixels(meters) {
 
 function syncRecordingUI() {
     recBtn.classList.toggle("recording", isRecording);
-    recStatusBox.textContent = isRecording ? "기록 중" : "대기 중";
+    recStatusBox.textContent = isRecording ? "湲곕줉 以? : "?湲?以?;
     recStatusBox.classList.toggle("recording", isRecording);
 }
 
@@ -313,14 +313,14 @@ function toggleRecording() {
 
 function startTracking() {
     if (!navigator.geolocation) {
-        alert("이 브라우저는 위치 추적을 지원하지 않습니다.");
+        alert("??釉뚮씪?곗????꾩튂 異붿쟻??吏?먰븯吏 ?딆뒿?덈떎.");
         resetRecordingState();
         return;
     }
     if (!window.isSecureContext &&
         location.hostname !== "localhost" &&
         location.hostname !== "127.0.0.1") {
-        alert("위치 추적은 HTTPS 또는 localhost에서만 동작합니다.");
+        alert("?꾩튂 異붿쟻? HTTPS ?먮뒗 localhost?먯꽌留??숈옉?⑸땲??");
         resetRecordingState();
         return;
     }
@@ -355,11 +355,11 @@ function handlePosition(position) {
     if (!isRecording) return;
 
     if (accuracy > MAX_ACCURACY_M) {
-        recStatusBox.textContent = `GPS 약함 (${Math.round(accuracy)}m)`;
+        recStatusBox.textContent = `GPS ?쏀븿 (${Math.round(accuracy)}m)`;
         return;
     }
 
-    recStatusBox.textContent = "기록 중";
+    recStatusBox.textContent = "湲곕줉 以?;
 
     const now = Date.now();
 
@@ -395,10 +395,10 @@ function handlePosition(position) {
 }
 
 function handleLocationError(err) {
-    let message = "위치 정보를 가져오지 못했습니다.";
-    if (err.code === 1) message = "위치 권한이 거부되었습니다.";
-    if (err.code === 2) message = "현재 위치를 확인할 수 없습니다.";
-    if (err.code === 3) message = "위치 요청 시간이 초과되었습니다.";
+    let message = "?꾩튂 ?뺣낫瑜?媛?몄삤吏 紐삵뻽?듬땲??";
+    if (err.code === 1) message = "?꾩튂 沅뚰븳??嫄곕??섏뿀?듬땲??";
+    if (err.code === 2) message = "?꾩옱 ?꾩튂瑜??뺤씤?????놁뒿?덈떎.";
+    if (err.code === 3) message = "?꾩튂 ?붿껌 ?쒓컙??珥덇낵?섏뿀?듬땲??";
     alert(message);
     resetRecordingState();
 }
@@ -469,10 +469,10 @@ function updateStats() {
 
 function addMemory() {
     if (!currentPos) {
-        alert("위치 정보를 수신 중입니다.");
+        alert("?꾩튂 ?뺣낫瑜??섏떊 以묒엯?덈떎.");
         return;
     }
-    const input = prompt("이 장소의 이름을 입력하세요:", "새로운 발견");
+    const input = prompt("???μ냼???대쫫???낅젰?섏꽭??", "?덈줈??諛쒓껄");
     if (input === null) return;
 
     const now = new Date();
@@ -480,7 +480,7 @@ function addMemory() {
         id: String(now.getTime()),
         lat: currentPos.lat,
         lng: currentPos.lng,
-        name: escapeHtml(input.trim() || "기억의 지점"),
+        name: escapeHtml(input.trim() || "湲곗뼦??吏??),
         time: now.getTime(),
         dateString: now.toLocaleDateString("ko-KR", {
             year: "numeric",
@@ -498,13 +498,13 @@ function addMemory() {
 
 function createMemoryMarker(data, openPopup = false) {
     const marker = L.marker([data.lat, data.lng], {
-        icon: L.divIcon({ className: "memory-marker", html: "★", iconSize: [28, 28] })
+        icon: L.divIcon({ className: "memory-marker", html: "??, iconSize: [28, 28] })
     }).addTo(map);
 
     marker.bindPopup(
-        "<b>" + data.name + "</b><br><small>" + data.dateString + " 기록</small><br>" +
+        "<b>" + data.name + "</b><br><small>" + data.dateString + " 湲곕줉</small><br>" +
         '<button onclick="deleteMemory(\'' + data.id + '\')" ' +
-        'style="margin-top:8px;padding:6px 10px;border:none;border-radius:8px;background:#ff5555;color:#fff;cursor:pointer;">삭제</button>'
+        'style="margin-top:8px;padding:6px 10px;border:none;border-radius:8px;background:#ff5555;color:#fff;cursor:pointer;">??젣</button>'
     );
 
     memoryMarkers.set(data.id, marker);
@@ -526,7 +526,7 @@ function deleteMemory(id) {
 function updateMemoryList() {
     const container = document.getElementById("memory-list-container");
     if (memories.length === 0) {
-        container.innerHTML = '<p class="empty-message">아직 기록이 없습니다.</p>';
+        container.innerHTML = '<p class="empty-message">?꾩쭅 湲곕줉???놁뒿?덈떎.</p>';
         return;
     }
     container.innerHTML = "";
@@ -534,13 +534,13 @@ function updateMemoryList() {
         const item = document.createElement("div");
         item.className = "memory-item";
         item.innerHTML =
-            '<span class="item-name">★ ' + memo.name + '</span>' +
+            '<span class="item-name">??' + memo.name + '</span>' +
             '<span class="item-date">' + memo.dateString + '</span>' +
             '<div style="margin-top:10px;display:flex;gap:8px;">' +
             '<button onclick="event.stopPropagation(); map.flyTo([' + memo.lat + ',' + memo.lng + '], 17);" ' +
-            'style="flex:1;padding:8px;border:none;border-radius:8px;background:#4db8ff;color:#fff;cursor:pointer;">이동</button>' +
+            'style="flex:1;padding:8px;border:none;border-radius:8px;background:#4db8ff;color:#fff;cursor:pointer;">?대룞</button>' +
             '<button onclick="event.stopPropagation(); deleteMemory(\'' + memo.id + '\')" ' +
-            'style="flex:1;padding:8px;border:none;border-radius:8px;background:#ff5555;color:#fff;cursor:pointer;">삭제</button>' +
+            'style="flex:1;padding:8px;border:none;border-radius:8px;background:#ff5555;color:#fff;cursor:pointer;">??젣</button>' +
             "</div>";
         item.onclick = () => {
             map.flyTo([memo.lat, memo.lng], 17);
@@ -595,7 +595,7 @@ function persistState() {
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch (error) {
-        console.error("저장 실패", error);
+        console.error("????ㅽ뙣", error);
     }
 }
 
@@ -645,7 +645,7 @@ function loadState() {
 
         compactPathData();
     } catch (error) {
-        console.error("복원 실패", error);
+        console.error("蹂듭썝 ?ㅽ뙣", error);
     }
 }
 
@@ -669,3 +669,4 @@ updateMemoryList();
 syncRecordingUI();
 resizeCanvas();
 scheduleRender();
+

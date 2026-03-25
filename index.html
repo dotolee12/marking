@@ -1,113 +1,61 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>나의 대동여지도 - 내 위치로 이동 버튼</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <style>
-    body, html { margin: 0; padding: 0; height: 100%; background: #000; }
-    #map { height: 100%; }
-    #buttonContainer {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 1000;
-      display: flex;
-      flex-direction: column;
-    }
-    button {
-      padding: 8px 16px;
-      margin: 4px;
-      background: #444;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #666;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>New Daedongyeojido - Project Giloa</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="./style.css">
 </head>
 <body>
-  <div id="map"></div>
-  <div id="buttonContainer">
-    <button onclick="markItem()">현재 위치에 마킹 추가</button>
-    <button onclick="clearMarkers()">마킹 삭제</button>
-    <button onclick="moveToCurrentLocation()">내 위치로 이동</button>
-  </div>
+<div id="sidebar">
+    <div class="sidebar-header">
+        <h2>?섏쓽 湲곕줉??/h2>
+        <span onclick="toggleSidebar(false)" class="close-btn">??/span>
+    </div>
+    <div id="memory-list-container">
+        <p class="empty-message">?꾩쭅 湲곕줉???놁뒿?덈떎.</p>
+    </div>
+</div>
+<div id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    let map;
-    let currentMarker = null;
-    let currentLatLng = null;
-    let itemMarkers = [];
+<div id="map-wrap"><div id="map"></div></div>
+<canvas id="fog-canvas"></canvas>
+<canvas id="age-canvas"></canvas>
+<canvas id="stay-canvas"></canvas>
 
-    // 지도 초기화
-    map = L.map('map').setView([37.5665, 126.9780], 15);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap, CartoDB'
-    }).addTo(map);
+<div id="top-bar">
+    <div id="ham-btn" onclick="toggleSidebar()">
+        <div class="hline"></div>
+        <div class="hline"></div>
+        <div class="hline"></div>
+    </div>
+    <div id="rec-status-box">?湲?以?/div>
+</div>
 
-    // 현재 위치 실시간 표시
-    navigator.geolocation.watchPosition(position => {
-      const lat = position.coords.latitude;
-      const lng = position.coords.longitude;
-      currentLatLng = [lat, lng];
+<div id="controls">
+    <div id="rec-btn" class="btn" onclick="toggleRecording()">
+        <div class="icon-rec"></div>
+        <div class="icon-stop"></div>
+    </div>
+    <div id="memo-btn" class="btn" onclick="addMemory()">??/div>
+    <div id="loc-btn" class="btn" onclick="centerMap()">
+        <div class="icon-loc"></div>
+    </div>
+</div>
 
-      if (currentMarker) {
-        map.removeLayer(currentMarker);
-      }
+<div id="hud">
+    <div class="stat">
+        <div class="label">TOTAL DISTANCE</div>
+        <div id="dist-val" class="value">0.00<span>km</span></div>
+    </div>
+    <div class="stat">
+        <div class="label">MEMORIES</div>
+        <div id="memo-val" class="value">0</div>
+    </div>
+</div>
 
-      currentMarker = L.circleMarker(currentLatLng, {
-        radius: 6,
-        color: 'lime',
-        fillColor: 'lime',
-        fillOpacity: 1
-      }).addTo(map);
-
-      // 자동 중심 이동 주석 처리 (버튼으로 대체)
-      // map.setView(currentLatLng, 15);
-
-    }, error => {
-      alert('위치 정보를 불러올 수 없습니다.');
-    }, {
-      enableHighAccuracy: true,
-      maximumAge: 0
-    });
-
-    // 현재 위치에 마킹 추가
-    function markItem() {
-      if (currentLatLng) {
-        const itemName = prompt("마킹할 아이템의 이름을 입력하세요:", "물건");
-        if (itemName !== null && itemName.trim() !== "") {
-          const marker = L.marker(currentLatLng)
-            .addTo(map)
-            .bindPopup(`📦 ${itemName}<br>위도: ${currentLatLng[0].toFixed(5)}, 경도: ${currentLatLng[1].toFixed(5)}`);
-          marker.openPopup();
-          itemMarkers.push(marker);
-        }
-      } else {
-        alert("현재 위치 정보를 가져올 수 없습니다.");
-      }
-    }
-
-    // 마킹 삭제
-    function clearMarkers() {
-      itemMarkers.forEach(marker => map.removeLayer(marker));
-      itemMarkers = [];
-    }
-
-    // 내 위치로 이동 버튼
-    function moveToCurrentLocation() {
-      if (currentLatLng) {
-        map.setView(currentLatLng, 15);
-      } else {
-        alert("현재 위치 정보를 가져올 수 없습니다.");
-      }
-    }
-  </script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="./script (1).js"></script>
 </body>
 </html>
